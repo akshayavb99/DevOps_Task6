@@ -1,0 +1,84 @@
+apiVersion: v1
+
+kind: PersistentVolume
+
+metadata:
+  name: html-pv
+  labels:
+    type: local
+
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/root/devops_task3/jenkins/html"
+
+---
+
+apiVersion: v1
+
+kind: PersistentVolumeClaim
+
+metadata:
+  name: html-pvc
+
+spec:
+  storageClassName: manual
+  accessModes: 
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: html-dp
+  labels:
+    app: html-dp
+spec:
+  selector:
+    matchLabels:
+      app: html-dp
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: html-dp
+    spec:
+      containers:
+      - image: httpd
+        name: html-con
+        ports:
+        - containerPort: 80
+          name: html-dp
+        volumeMounts:
+        - name: html-storage
+          mountPath: /usr/local/apache2/htdocs/
+      volumes:
+      - name: html-storage
+        persistentVolumeClaim:
+          claimName: html-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: html-svc
+  labels:
+    app: html-svc
+spec:
+  ports:
+    - port: 80
+      nodePort: 31203
+  selector:
+    app: html-dp
+    tier: frontend
+  type: NodePort
