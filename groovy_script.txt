@@ -1,0 +1,24 @@
+job("DevOps_Task6_Job1") {
+description ("Job to pull code from GitHub repository")
+  scm{
+    github('akshayavb99/DevOps_Task6','master')
+  }
+  triggers {
+        githubPush()
+    }
+   steps {
+        shell('sudo cp -rvf * /root/devops_task6/')
+    }
+}
+
+}
+
+
+
+buildPipelineView('DevOps_Task6') {
+    title('DevOps_Task6')
+    displayedBuilds(3)
+    selectedJob('DevOps_Task6_Job1')
+    showPipelineParameters(true)
+    refreshFrequency(3)
+}
